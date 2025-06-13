@@ -1,0 +1,305 @@
+// Variables
+$color-primary: #0073aa;
+$color-text: #666;
+$color-border: #eee;
+$color-star: #ffb900;
+$color-star-empty: #ddd;
+$spacing-base: 1rem;
+$border-radius: 8px;
+$box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+// Mixins
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@mixin responsive($breakpoint) {
+    @media (max-width: $breakpoint) {
+        @content;
+    }
+}
+
+// Main Styles
+.bl-reviews-wrapper {
+    /* Grid Layout */
+    &.bl-reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2em;
+
+        // Ensure items always fill their column width
+        .bl-review-item {
+            width: 100%;
+        }
+    }
+
+    /* List Layout */
+    &.bl-reviews-list .bl-review-item {
+        margin-bottom: 2em;
+        padding-bottom: 2em;
+        border-bottom: 1px solid $color-border;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    @include responsive(992px) {
+        &.bl-reviews-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .bl-review-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5em;
+        }
+    
+        .bl-review-meta,
+        .bl-review-meta-right {
+            width: 100%;
+            justify-content: flex-start;
+        }
+    }
+
+    /* Responsive Adjustments */
+    @include responsive(480px) {
+        &.bl-reviews-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .bl-review-item {
+            padding: 1em;
+        }
+        
+        .bl-review-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5em;
+        }
+        
+        .bl-review-meta, .bl-review-meta-right {
+            width: 100%;
+            justify-content: flex-start;
+        } 
+    }
+}
+
+/* Review Item Styles */
+.bl-review-item {
+    background: #fff;
+    padding: calc($spacing-base * 1.5);
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+} 
+
+.bl-review-header {
+    @include flex-between;
+    margin-bottom: $spacing-base;
+    border-bottom: 1px solid $color-border;
+    padding-bottom: $spacing-base;
+}
+
+.bl-review-rating {
+    @include flex-center;
+
+    .star {
+        color: $color-star-empty;
+        font-size: 1.2em;
+        margin-right: 2px;
+
+        &.filled {
+            color: $color-star;
+        }
+    }
+}
+
+.bl-review-meta {
+    @include flex-center;
+    gap: $spacing-base;
+    color: $color-text;
+    font-size: 0.9em;
+    display: flex;
+}
+
+.bl-review-source {
+    @include flex-center;
+    gap: 0.5em;
+
+    img {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+    }
+}
+
+.bl-review-author {
+    font-weight: 600;
+    font-size: 1.1em;
+    margin: 0.5em 0;
+}
+
+.bl-review-content {
+    margin: $spacing-base 0;
+    line-height: 1.6;
+
+    &.bl-review-content-truncated {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        position: relative;
+        max-height: 6.4em; // 4 lines * 1.6 line-height
+        transition: max-height 0.3s ease;
+
+        &.expanded {
+            -webkit-line-clamp: unset;
+            max-height: 2000px; // Large enough to show all content
+        }
+    }
+}
+
+.bl-review-read-more {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.2s ease;
+    z-index: 1;
+    position: relative;
+    background-color: $color-primary;
+    text-transform: uppercase;
+    border-radius: 4px;
+    transition: background-color 0.3s ease-in-out;
+
+    &:hover {
+        background-color: #005177;
+    }
+
+    &:focus {
+        outline: 2px solid #0073aa;
+        outline-offset: 2px;
+    }
+}
+
+/* Carousel Layout */
+.bl-reviews-carousel {
+    position: relative;
+    overflow: hidden;
+
+    .bl-review-item {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease-in-out;
+
+        &.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    }
+
+    .bl-carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background: #fff;
+        }
+
+        &.bl-carousel-prev {
+            left: 10px;
+        }
+
+        &.bl-carousel-next {
+            right: 10px;
+        }
+    }
+}
+
+
+
+/* Load More Button */
+.bl-reviews-load-more,
+.bl-reviews-load-more-editor {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: $color-primary;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease;
+    margin-top: 1.5em;
+
+    &:hover {
+        background-color: darken($color-primary, 8%);
+    }
+}
+
+/* Alignment variations based on layout */
+.bl-reviews-wrapper.bl-reviews-grid + .bl-reviews-load-more,
+.bl-reviews-wrapper.bl-reviews-grid + .bl-reviews-load-more-editor {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.bl-reviews-wrapper.bl-reviews-list + .bl-reviews-load-more,
+.bl-reviews-wrapper.bl-reviews-list + .bl-reviews-load-more-editor {
+    display: block;
+    margin-left: 0;
+}
+
+// Match meta styles across layouts
+.bl-review-meta-right {
+    @include flex-center;
+    gap: $spacing-base;
+    color: $color-text;
+    font-size: 0.9em;
+    display: flex;
+} 
+
+/* Editor preview adjustments for Carousel layout */
+.bl-reviews-wrapper.bl-reviews-carousel.bl-editor-preview {
+    overflow: visible;
+
+    .bl-review-item {
+        position: static;
+        opacity: 1;
+        pointer-events: auto;
+        transform: none;
+    }
+} 

@@ -1,0 +1,245 @@
+jQuery(document).ready(function($) {
+    // Track whether new, unsaved widget rows (or unsaved edits that introduce a new widget ID) exist
+    let unsavedAdditions = false;
+
+    // Capture the list of originally saved widget IDs on page load
+    const initialWidgetIds = [];
+    $('.widget-row').each(function() {
+        const idVal = $(this).find('input[name$="[widget_id]"]').val().trim();
+        if (idVal !== '') {
+            initialWidgetIds.push(idVal);
+        }
+    });
+
+    function markUnsavedAdditions() {
+        unsavedAdditions = true;
+    }
+
+    // When a new widget row is added it's automatically an unsaved addition
+    $('#add-widget').on('click', function() {
+        markUnsavedAdditions();
+    });
+
+    // When widget ID inputs are changed to a value that wasn't originally present mark as unsaved addition
+    $(document).on('input', 'input[name$="[widget_id]"]', function() {
+        const val = $(this).val().trim();
+        if (val !== '' && initialWidgetIds.indexOf(val) === -1) {
+            markUnsavedAdditions();
+        }
+    });
+
+    // Submitting the settings form clears the unsaved additions flag (as we assume the page will reload)
+    $(document).on('submit', 'form', function() {
+        unsavedAdditions = false;
+    });
+
+    // Warn if user attempts to navigate away with unsaved additions
+    window.addEventListener('beforeunload', function (e) {
+        if (!unsavedAdditions) {
+            return undefined;
+        }
+        const confirmationMessage = 'You have unsaved changes to your Widget IDs. If you leave this page, the changes will be lost.';
+        (e || window.event).returnValue = confirmationMessage; // Gecko + IE
+        return confirmationMessage; // Gecko + Webkit, Safari, Chrome etc.
+    });
+
+    function updateDeleteButtonVisibility() {
+        const hasReviews = $('#bl_get_reviews').attr('data-has-reviews') === '1';
+        if (hasReviews) {
+            if (!$('#bl_delete_all_reviews').length) {
+                $('#bl_get_reviews').after(
+                    '<button type="button" class="button button-link-delete" id="bl_delete_all_reviews" style="margin-left: 10px;">' +
+                    'Delete All Reviews' +
+                    '</button>'
+                );
+            }
+        } else {
+            $('#bl_delete_all_reviews').remove();
+        }
+    }
+
+    // Initial check
+    updateDeleteButtonVisibility();
+
+    $('#bl_refresh_reviews').on('click', function(e) {
+        e.preventDefault();
+        
+        const $button = $(this);
+        const originalText = $button.text();
+        
+        $button.prop('disabled', true).text('Refreshing...');
+        
+        $.ajax({
+            url: blReviewsAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'bl_refresh_reviews',
+                nonce: blReviewsAdmin.nonce,
+                post_id: blReviewsAdmin.postId
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.data.message);
+                } else {
+                    alert('Error: ' + response.data);
+                }
+            },
+            error: function() {
+                alert('Failed to refresh reviews. Please try again.');
+            },
+            complete: function() {
+                $button.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+
+    $('#bl_get_reviews').on('click', function() {
+        // Collect current widget rows so they can be saved and then used for review fetching
+        const widgetsPayload = [];
+        $('.widget-row').each(function() {
+            const widgetId = $(this).find('input[name$="[widget_id]"]').val().trim();
+            const label    = $(this).find('input[name$="[label]"]').val().trim();
+
+            if (widgetId !== '' && label !== '') {
+                widgetsPayload.push({ widget_id: widgetId, label: label });
+            }
+        });
+
+        if (widgetsPayload.length === 0) {
+            alert('Please enter at least one widget ID before getting or updating reviews');
+            return;
+        }
+
+        const $button = $(this);
+        const originalText = $button.text();
+
+        // Helper to fetch reviews after saving
+        function fetchReviews() {
+            $button.text('Fetching reviews...');
+
+            $.ajax({
+                url: blReviewsAdmin.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'bl_get_reviews',
+                    nonce: blReviewsAdmin.nonce,
+                    widgets: JSON.stringify(widgetsPayload)
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.data.message);
+                        $button.text('Update Reviews').attr('data-has-reviews', '1');
+                        updateDeleteButtonVisibility();
+                    } else {
+                        alert('Error: ' + response.data);
+                    }
+                },
+                error: function() {
+                    alert('Failed to fetch reviews. Please try again.');
+                },
+                complete: function() {
+                    $button.prop('disabled', false).text(originalText);
+                }
+            });
+        }
+
+        // First save widget settings via AJAX, then fetch reviews
+        $button.prop('disabled', true).text('Saving settings...');
+
+        $.ajax({
+            url: blReviewsAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'bl_save_widgets',
+                nonce: blReviewsAdmin.saveWidgetsNonce,
+                widgets: JSON.stringify(widgetsPayload)
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Clear unsaved flag as settings are now persisted
+                    unsavedAdditions = false;
+                    // Refresh initialWidgetIds to the just-saved list so further edits are tracked correctly
+                    initialWidgetIds.length = 0;
+                    widgetsPayload.forEach(function(w){ initialWidgetIds.push(w.widget_id); });
+                    fetchReviews();
+                } else {
+                    alert('Error saving settings: ' + response.data);
+                    $button.prop('disabled', false).text(originalText);
+                }
+            },
+            error: function() {
+                alert('Failed to save settings. Please try again.');
+                $button.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+
+    $(document).on('click', '#bl_delete_all_reviews', function() {
+        if (!confirm(blReviewsAdmin.confirmDelete)) {
+            return;
+        }
+
+        const $button = $(this);
+        const $getReviewsButton = $('#bl_get_reviews');
+        
+        $button.prop('disabled', true).text('Deleting reviews...');
+
+        $.ajax({
+            url: blReviewsAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'bl_delete_all_reviews',
+                nonce: blReviewsAdmin.deleteNonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.data.message);
+                    $getReviewsButton.text('Get Reviews').attr('data-has-reviews', '0');
+                    updateDeleteButtonVisibility();
+                } else {
+                    alert('Error: ' + response.data);
+                }
+            },
+            error: function() {
+                alert('Failed to delete reviews. Please try again.');
+            },
+            complete: function() {
+                $button.prop('disabled', false).text('Delete All Reviews');
+            }
+        });
+    });
+
+    // Helper to create/update the View Raw JSON link when widget ID field has content
+    function updateJsonLink($input) {
+        const widgetId = $input.val().trim();
+        const $cell = $input.closest('td');
+        let $container = $cell.find('.bl-widget-json-link');
+
+        if (widgetId !== '') {
+            if ($container.length === 0) {
+                $container = $('<div class="bl-widget-json-link"></div>').appendTo($cell);
+            }
+
+            const url = blReviewsAdmin.baseUrl + widgetId;
+
+            if ($container.find('a').length) {
+                $container.find('a').attr('href', url);
+            } else {
+                $container.html('<a href="' + url + '" target="_blank" rel="noopener noreferrer">View Raw JSON</a>');
+            }
+        } else {
+            // Remove link if field becomes empty
+            $container.remove();
+        }
+    }
+
+    // Initial rendering of links for any pre-populated widget IDs
+    $('input[name$="[widget_id]"]').each(function() {
+        updateJsonLink($(this));
+    });
+
+    // Update link dynamically as user types
+    $(document).on('input', 'input[name$="[widget_id]"]', function() {
+        updateJsonLink($(this));
+    });
+}); 
