@@ -80,14 +80,16 @@ $box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .bl-review-header {
-            flex-direction: column;
-            align-items: flex-start;
+            flex-direction: row;
+            align-items: center;
             gap: 0.5em;
         }
         
-        .bl-review-meta, .bl-review-meta-right {
-            width: 100%;
+        .bl-review-meta,
+        .bl-review-meta-right {
+            width: auto;
             justify-content: flex-start;
+            flex-wrap: nowrap;
         } 
     }
 }

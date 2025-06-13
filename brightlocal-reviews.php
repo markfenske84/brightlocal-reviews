@@ -20,6 +20,8 @@ define('BL_REVIEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
 require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-post-type.php';
 require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-admin.php';
 require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-block.php';
+require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-updater.php';
+require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-bitbucket-updater.php';
 
 // Initialize the plugin
 function bl_reviews_init() {
@@ -31,6 +33,11 @@ function bl_reviews_init() {
     
     // Initialize block
     new BL_Reviews_Block();
+
+    // Set up the Bitbucket updater when running inside wp-admin.
+    if ( is_admin() ) {
+        new BL_Reviews_Bitbucket_Updater( 'webforagency', 'plugin-brightlocal-reviews', __FILE__ );
+    }
 }
 add_action('plugins_loaded', 'bl_reviews_init');
 
