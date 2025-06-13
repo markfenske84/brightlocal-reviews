@@ -156,16 +156,3 @@ function bl_reviews_load_more_ajax() {
 }
 add_action( 'wp_ajax_bl_load_more_reviews', 'bl_reviews_load_more_ajax' );
 add_action( 'wp_ajax_nopriv_bl_load_more_reviews', 'bl_reviews_load_more_ajax' );
-
-add_filter( 'plugin_action_links', function ( $links, $file ) {
-
-    if ( strpos( $file, 'brightlocal-reviews.php' ) !== false ) {
-        $settings_link = '<a href="' . admin_url( 'admin.php?page=brightlocal-reviews' ) . '">' .
-                         __( 'Settings', 'brightlocal-reviews' ) . '</a>';
-
-        // Put Settings first → Settings | Deactivate | Edit
-        array_unshift( $links, $settings_link );
-    }
-
-    return $links;
-}, 10, 2 ); 
