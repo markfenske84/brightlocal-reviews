@@ -2,18 +2,18 @@
 /**
  * Plugin Name: BrightLocal Reviews
  * Description: Display reviews from BrightLocal Showcase Review widget
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: Mark Fenske
  * Text Domain: brightlocal-reviews
  */
 
-if (!defined('ABSPATH')) { 
+if (!defined('ABSPATH')) {
     exit;
 }
 
 // Define plugin constants
-define('BL_REVIEWS_VERSION', '1.0.5');
-define('BL_REVIEWS_PLUGIN_DIR', plugin_dir_path(__FILE__)); 
+define('BL_REVIEWS_VERSION', '1.0.6');
+define('BL_REVIEWS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('BL_REVIEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 // Include required files
