@@ -2,7 +2,7 @@
 /**
  * Plugin Name: BrightLocal Reviews
  * Description: Display reviews from BrightLocal Showcase Review widget
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Mark Fenske
  * Text Domain: brightlocal-reviews
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('BL_REVIEWS_VERSION', '1.0.2');
+define('BL_REVIEWS_VERSION', '1.0.3');
 define('BL_REVIEWS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('BL_REVIEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -32,7 +32,7 @@ function bl_reviews_init() {
     new BL_Reviews_Admin();
     
     // Initialize block
-    new BL_Reviews_Block();
+    new BL_Reviews_Block(); 
 
     // Set up the Bitbucket updater when running inside wp-admin.
     if ( is_admin() ) {
