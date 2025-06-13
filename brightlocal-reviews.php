@@ -2,7 +2,7 @@
 /**
  * Plugin Name: BrightLocal Reviews
  * Description: Display reviews from BrightLocal Showcase Review widget
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Mark Fenske
  * Text Domain: brightlocal-reviews
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('BL_REVIEWS_VERSION', '1.0.1');
+define('BL_REVIEWS_VERSION', '1.0.2');
 define('BL_REVIEWS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('BL_REVIEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -155,4 +155,17 @@ function bl_reviews_load_more_ajax() {
     wp_die();
 }
 add_action( 'wp_ajax_bl_load_more_reviews', 'bl_reviews_load_more_ajax' );
-add_action( 'wp_ajax_nopriv_bl_load_more_reviews', 'bl_reviews_load_more_ajax' ); 
+add_action( 'wp_ajax_nopriv_bl_load_more_reviews', 'bl_reviews_load_more_ajax' );
+
+add_filter( 'plugin_action_links', function ( $links, $file ) {
+
+    if ( strpos( $file, 'brightlocal-reviews.php' ) !== false ) {
+        $settings_link = '<a href="' . admin_url( 'admin.php?page=brightlocal-reviews' ) . '">' .
+                         __( 'Settings', 'brightlocal-reviews' ) . '</a>';
+
+        // Put Settings first → Settings | Deactivate | Edit
+        array_unshift( $links, $settings_link );
+    }
+
+    return $links;
+}, 10, 2 ); 
