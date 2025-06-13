@@ -389,12 +389,12 @@ class BL_Reviews_Admin {
                         <?php _e('Need a BrightLocal account? <a href="https://tools.brightlocal.com/seo-tools/admin/sign-up-v2/257/" target="_blank">Click here to get started</a> with a free trial.', 'brightlocal-reviews'); ?>
                     <br><br>
                     <?php if ($has_reviews): ?>
-                    <button type="button" class="button button-link-delete" id="bl_delete_all_reviews">
+                    <button type="button" class="button button-link-delete" id="bl_delete_all_reviews" style="margin-right: 10px;">
                         <?php _e('Delete All Reviews', 'brightlocal-reviews'); ?>
                     </button>
                     <?php endif; ?>
                     <?php if ($has_saved_widgets): ?>
-                    <button type="button" class="button button-link-delete" id="bl_remove_all_widgets" style="margin-left: 10px;">
+                    <button type="button" class="button button-link-delete" id="bl_remove_all_widgets">
                         <?php _e('Remove All Widgets', 'brightlocal-reviews'); ?>
                     </button>
                     <?php endif; ?>
@@ -570,10 +570,33 @@ class BL_Reviews_Admin {
             return;
         }
 
+        // 1. Clear stored widget IDs / labels
         update_option('bl_reviews_widgets', array());
 
+        // 2. Remove all terms for the related taxonomies so they do not linger in the database / UI
+
+        // Delete all Source terms
+        $source_terms = get_terms(array(
+            'taxonomy'   => 'bl_review_source',
+            'hide_empty' => false,
+        ));
+
+        foreach ($source_terms as $term) {
+            wp_delete_term($term->term_id, 'bl_review_source');
+        }
+
+        // Delete all Label terms (these are linked to widgets)
+        $label_terms = get_terms(array(
+            'taxonomy'   => 'bl_review_label',
+            'hide_empty' => false,
+        ));
+
+        foreach ($label_terms as $term) {
+            wp_delete_term($term->term_id, 'bl_review_label');
+        }
+
         wp_send_json_success(array(
-            'message' => __('Successfully removed all widgets from settings.', 'brightlocal-reviews')
+            'message' => __('Successfully removed all widgets and cleared associated taxonomies.', 'brightlocal-reviews')
         ));
     }
 

@@ -43,18 +43,40 @@ jQuery(document).ready(function($) {
         return confirmationMessage; // Gecko + Webkit, Safari, Chrome etc.
     });
 
+    // Update visibility/creation of extra action buttons (Delete Reviews & Remove Widgets)
     function updateDeleteButtonVisibility() {
-        const hasReviews = $('#bl_get_reviews').attr('data-has-reviews') === '1';
+        const $submitContainer = $('#bl_get_reviews').parent(); // <p class="submit">
+
+        // Ensure a single wrapper span exists to hold additional action buttons
+        let $wrapper = $submitContainer.find('.bl-action-buttons-wrapper');
+        if (!$wrapper.length) {
+            $wrapper = $('<span class="bl-action-buttons-wrapper"></span>').appendTo($submitContainer);
+        }
+
+        const hasReviews       = $('#bl_get_reviews').attr('data-has-reviews') === '1';
+        const hasSavedWidgets  = initialWidgetIds.length > 0;
+
+        // ----- Delete All Reviews button -----
         if (hasReviews) {
             if (!$('#bl_delete_all_reviews').length) {
-                $('#bl_get_reviews').after(
-                    '<button type="button" class="button button-link-delete" id="bl_delete_all_reviews" style="margin-left: 10px;">' +
-                    'Delete All Reviews' +
-                    '</button>'
-                );
+                $wrapper.append('<button type="button" class="button button-link-delete" id="bl_delete_all_reviews" style="margin-right: 10px;">Delete All Reviews</button>');
             }
         } else {
             $('#bl_delete_all_reviews').remove();
+        }
+
+        // ----- Remove All Widgets button -----
+        if (hasSavedWidgets) {
+            if (!$('#bl_remove_all_widgets').length) {
+                $wrapper.append('<button type="button" class="button button-link-delete" id="bl_remove_all_widgets">Remove All Widgets</button>');
+            }
+        } else {
+            $('#bl_remove_all_widgets').remove();
+        }
+
+        // If wrapper is empty (no children), remove it to keep DOM clean
+        if ($wrapper.children().length === 0) {
+            $wrapper.remove();
         }
     }
 
@@ -138,7 +160,14 @@ jQuery(document).ready(function($) {
                     alert('Failed to fetch reviews. Please try again.');
                 },
                 complete: function() {
-                    $button.prop('disabled', false).text(originalText);
+                    $button.prop('disabled', false);
+
+                    // Ensure the button label reflects current state
+                    if ($button.attr('data-has-reviews') === '1') {
+                        $button.text('Update Reviews');
+                    } else {
+                        $button.text('Get Reviews');
+                    }
                 }
             });
         }
@@ -205,6 +234,44 @@ jQuery(document).ready(function($) {
             },
             complete: function() {
                 $button.prop('disabled', false).text('Delete All Reviews');
+            }
+        });
+    });
+
+    // Use delegated handler so it works for dynamically inserted button
+    $(document).on('click', '#bl_remove_all_widgets', function() {
+        if (!confirm(blReviewsAdmin.confirmRemoveWidgets)) {
+            return;
+        }
+
+        const $button = $(this);
+        const $getReviewsButton = $('#bl_get_reviews');
+        
+        $button.prop('disabled', true).text('Removing widgets...');
+
+        $.ajax({
+            url: blReviewsAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'bl_remove_all_widgets',
+                nonce: blReviewsAdmin.removeWidgetsNonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.data.message);
+                    $getReviewsButton.text('Get Reviews').attr('data-has-reviews', '0');
+                    // Clear list of initial widget IDs since they are removed
+                    initialWidgetIds.length = 0;
+                    updateDeleteButtonVisibility();
+                } else {
+                    alert('Error: ' + response.data);
+                }
+            },
+            error: function() {
+                alert('Failed to remove widgets. Please try again.');
+            },
+            complete: function() {
+                $button.prop('disabled', false).text('Remove All Widgets');
             }
         });
     });
