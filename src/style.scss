@@ -89,14 +89,14 @@ $box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         .bl-review-meta-right {
             width: auto;
             justify-content: flex-start;
-            flex-wrap: nowrap;
+            flex-wrap: nowrap;  
         } 
     }
 }
 
 /* Review Item Styles */
 .bl-review-item {
-    background: #fff;
+    background: #fff; 
     padding: calc($spacing-base * 1.5);
     border-radius: $border-radius;
     box-shadow: $box-shadow;
