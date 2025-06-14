@@ -4,6 +4,7 @@
  * Description: Display reviews from BrightLocal Showcase Review widget
  * Version: 1.0.7
  * Author: Mark Fenske
+ * Update URI: https://github.com/markfenske84/brightlocal-reviews
  * Text Domain: brightlocal-reviews
  */
 
