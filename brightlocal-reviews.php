@@ -22,9 +22,9 @@ require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-post-type.php';
 require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-admin.php';
 require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-block.php';
 
-// Load Composer autoloader so that external libraries are available.
-if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
-    require_once __DIR__ . '/vendor/autoload.php';
+// Load the Plugin Update Checker library directly (no Composer requirement).
+if ( file_exists( BL_REVIEWS_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php' ) ) {
+    require_once BL_REVIEWS_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php';
 }
 
 // Register GitHub-based automatic updates using Yahnis Elsts\' Plugin Update Checker.

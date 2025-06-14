@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // Variables
 $color-primary: #0073aa;
 $color-text: #666;
@@ -103,7 +105,7 @@ $box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 } 
 
 .bl-review-header {
-    @include flex-between;
+    @include flex-between; 
     margin-bottom: $spacing-base;
     border-bottom: 1px solid $color-border;
     padding-bottom: $spacing-base;
@@ -186,7 +188,7 @@ $box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease-in-out;
 
     &:hover {
-        background-color: #005177;
+        background-color: color.adjust($color-primary, $lightness: -8%);
     }
 
     &:focus {
@@ -249,12 +251,10 @@ $box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 }
 
-
-
 /* Load More Button */
 .bl-reviews-load-more,
 .bl-reviews-load-more-editor {
-    display: inline-block;
+    display: inline-block; 
     padding: 0.75rem 1.5rem;
     background: $color-primary;
     color: #fff;
@@ -267,7 +267,7 @@ $box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-top: 1.5em;
 
     &:hover {
-        background-color: darken($color-primary, 8%);
+        background-color: color.adjust($color-primary, $lightness: -8%);
     }
 }
 
@@ -305,3 +305,32 @@ $box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         transform: none;
     }
 } 
+
+// Spinner styles for Load More button
+.bl-reviews-load-more[data-loading="true"],
+.bl-reviews-load-more-editor[data-loading="true"] {
+  position: relative;
+  pointer-events: none; 
+  color: transparent;
+} 
+
+.bl-reviews-load-more[data-loading="true"]::after,
+.bl-reviews-load-more-editor[data-loading="true"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1em;
+  height: 1em;
+  margin: -0.5em 0 0 -0.5em;
+  border: 2px solid #fff;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: bl-reviews-spin 1s linear infinite;
+}
+
+@keyframes bl-reviews-spin {
+  to {
+    transform: rotate(1turn);
+  } 
+}   

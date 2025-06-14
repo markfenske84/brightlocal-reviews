@@ -150,7 +150,7 @@
   transition: background-color 0.3s ease-in-out;
 }
 .bl-review-read-more:hover {
-  background-color: #005177;
+  background-color: rgb(0, 87.4, 129.2);
 }
 .bl-review-read-more:focus {
   outline: 2px solid #0073aa;
@@ -257,6 +257,34 @@
   opacity: 1;
   pointer-events: auto;
   transform: none;
+}
+
+.bl-reviews-load-more[data-loading=true],
+.bl-reviews-load-more-editor[data-loading=true] {
+  position: relative;
+  pointer-events: none;
+  color: transparent;
+}
+
+.bl-reviews-load-more[data-loading=true]::after,
+.bl-reviews-load-more-editor[data-loading=true]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1em;
+  height: 1em;
+  margin: -0.5em 0 0 -0.5em;
+  border: 2px solid #fff;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: bl-reviews-spin 1s linear infinite;
+}
+
+@keyframes bl-reviews-spin {
+  to {
+    transform: rotate(1turn);
+  }
 }
 
 /*# sourceMappingURL=style-index.css.map*/
