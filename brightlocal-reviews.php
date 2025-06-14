@@ -20,8 +20,23 @@ define('BL_REVIEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
 require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-post-type.php';
 require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-admin.php';
 require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-block.php';
-require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-updater.php';
-require_once BL_REVIEWS_PLUGIN_DIR . 'includes/class-bl-reviews-bitbucket-updater.php';
+
+// Load Composer autoloader so that external libraries are available.
+if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
+
+// Register GitHub-based automatic updates using Yahnis Elsts\' Plugin Update Checker.
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$bl_reviews_update_checker = PucFactory::buildUpdateChecker(
+    'https://github.com/markfenske84/brightlocal-reviews/', // GitHub repository
+    __FILE__,                                              // Full path to main plugin file
+    'brightlocal-reviews'                                  // Plugin slug
+);
+$bl_reviews_update_checker->setBranch( 'main' );
+// Uncomment the next line if you attach custom release asset ZIPs instead of the automatically generated archive.
+// $bl_reviews_update_checker->getVcsApi()->enableReleaseAssets();
 
 // Initialize the plugin
 function bl_reviews_init() {
@@ -33,11 +48,6 @@ function bl_reviews_init() {
     
     // Initialize block
     new BL_Reviews_Block(); 
-
-    // Set up the Bitbucket updater when running inside wp-admin.
-    if ( is_admin() ) {
-        new BL_Reviews_Bitbucket_Updater( 'webforagency', 'plugin-brightlocal-reviews', __FILE__ );
-    }
 }
 add_action('plugins_loaded', 'bl_reviews_init');
 
