@@ -14,7 +14,8 @@ class BL_Reviews_Admin {
         add_action('init', array($this, 'register_taxonomies'));
         add_filter('parent_file', array($this, 'set_current_menu'));
         add_filter('submenu_file', array($this, 'set_current_submenu'));
-        add_filter('plugin_action_links_brightlocal-reviews/brightlocal-reviews.php', array($this, 'add_plugin_action_links'));
+        $plugin_basename = plugin_basename( BL_REVIEWS_PLUGIN_DIR . 'brightlocal-reviews.php' );
+        add_filter( 'plugin_action_links_' . $plugin_basename, array( $this, 'add_plugin_action_links' ) );
     }
 
     public function register_taxonomies() {
