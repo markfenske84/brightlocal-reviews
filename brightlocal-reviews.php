@@ -153,6 +153,6 @@ function bl_reviews_load_more_ajax() {
     echo ob_get_clean();
 
     wp_die();
-}
+} 
 add_action( 'wp_ajax_bl_load_more_reviews', 'bl_reviews_load_more_ajax' );
 add_action( 'wp_ajax_nopriv_bl_load_more_reviews', 'bl_reviews_load_more_ajax' );
