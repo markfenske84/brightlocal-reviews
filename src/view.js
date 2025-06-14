@@ -390,4 +390,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         });
     });
+
+    // Remove focus after click to prevent sticky :focus styles
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.classList.contains('bl-review-read-more') || e.target.classList.contains('bl-reviews-load-more'))) {
+            e.target.blur();
+        }
+    });
 }); 

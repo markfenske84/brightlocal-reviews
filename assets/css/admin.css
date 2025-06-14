@@ -260,11 +260,20 @@
 }
 
 /* Radius fieldset improvements */
-.radius-input {
-    width:60px;
-}
-label.hidden { display:none; }
-.bl-link-radius-toggle .dashicons {
-    font-size:18px;
+.bl-radius-grid{
+    display:inline-grid;
+    grid-template-columns:repeat(2,auto);
+    grid-gap:6px 12px;
+    align-items:center;
     vertical-align:middle;
-} 
+}
+.bl-radius-cell{
+    text-align:center;
+    font-size:12px;
+}
+.radius-input{width:50px;margin-top:2px;height:28px;}
+label.hidden{display:none;}
+.bl-radius-link{display:inline-block;margin-left:12px;vertical-align:middle;}
+.bl-radius-link .dashicons{font-size:18px;vertical-align:middle;}
+
+.bl-radius-wrapper{display:inline-flex;align-items:center;gap:8px;} 

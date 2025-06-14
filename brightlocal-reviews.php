@@ -2,7 +2,7 @@
 /**
  * Plugin Name: BrightLocal Reviews
  * Description: Display reviews from BrightLocal Showcase Review widget
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Mark Fenske
  * Update URI: https://github.com/markfenske84/brightlocal-reviews
  * Text Domain: brightlocal-reviews
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('BL_REVIEWS_VERSION', '1.1.0');
+define('BL_REVIEWS_VERSION', '1.1.1');
 define('BL_REVIEWS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('BL_REVIEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -203,6 +203,8 @@ function bl_reviews_frontend_button_styles() {
     echo '.bl-review-read-more, .bl-reviews-load-more {';
     echo 'background-color:' . esc_attr( $bg_color ) . ';';
     echo 'color:' . esc_attr( $text_color ) . ';';
+    $text_transform = isset( $settings['text_transform'] ) ? $settings['text_transform'] : 'none';
+    echo 'text-transform:' . esc_attr( $text_transform ) . ';';
     echo 'border-radius:' . esc_attr( $radius_css ) . ';';
     echo '}';
     // Hover state

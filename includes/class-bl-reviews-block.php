@@ -52,7 +52,7 @@ class BL_Reviews_Block {
         wp_register_script(
             'brightlocal-reviews-view',
             BL_REVIEWS_PLUGIN_URL . 'build/view.js',
-            array('jquery'),
+            array(),
             time(), // Use time() for development to prevent caching
             true
         );
