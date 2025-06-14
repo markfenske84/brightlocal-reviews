@@ -107,6 +107,21 @@ class BL_Reviews_Admin {
             ),
             'sanitize_callback' => array($this, 'validate_widgets')
         ));
+        // NEW: Register button style settings (background, text color, hover colors & border radius)
+        register_setting( 'bl_reviews_display', 'bl_reviews_button_settings', array(
+            'type'              => 'array',
+            'default'           => array(
+                'bg_color'   => '#0073aa',
+                'text_color' => '#ffffff',
+                'bg_color_hover'   => '#005177',
+                'text_color_hover' => '#ffffff',
+                'radius_tl'  => 4,
+                'radius_tr'  => 4,
+                'radius_br'  => 4,
+                'radius_bl'  => 4,
+            ),
+            'sanitize_callback' => array( $this, 'sanitize_button_settings' )
+        ) );
     }
 
     public function validate_widgets($widgets) {
@@ -268,14 +283,14 @@ class BL_Reviews_Admin {
         wp_enqueue_style(
             'bl-reviews-admin',
             BL_REVIEWS_PLUGIN_URL . 'assets/css/admin.css',
-            array(),
+            array('wp-color-picker'), // include color picker dependency
             BL_REVIEWS_VERSION
         );
 
         wp_enqueue_script(
             'bl-reviews-admin',
             BL_REVIEWS_PLUGIN_URL . 'assets/js/admin.js',
-            array('jquery'),
+            array('jquery', 'wp-color-picker'), // include color picker dependency
             BL_REVIEWS_VERSION,
             true
         );
@@ -297,6 +312,15 @@ class BL_Reviews_Admin {
             return;
         }
 
+        // Determine active tab (widgets | display)
+        $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'widgets';
+
+        // If we are on the Display tab, delegate and bail out early.
+        if ( 'display' === $current_tab ) {
+            $this->render_display_tab( $current_tab );
+            return;
+        }
+        
         // Check if any reviews exist
         $has_reviews = get_posts(array(
             'post_type' => 'bl-reviews',
@@ -323,6 +347,14 @@ class BL_Reviews_Admin {
         ?>
         <div class="wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+            <h2 class="nav-tab-wrapper">
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=brightlocal-reviews&tab=widgets' ) ); ?>" class="nav-tab <?php echo ( $current_tab === 'widgets' ) ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e( 'Widgets', 'brightlocal-reviews' ); ?>
+                </a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=brightlocal-reviews&tab=display' ) ); ?>" class="nav-tab <?php echo ( $current_tab === 'display' ) ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e( 'Display', 'brightlocal-reviews' ); ?>
+                </a>
+            </h2>
             
             <?php settings_errors('bl_reviews_widgets'); ?>
             
@@ -379,6 +411,7 @@ class BL_Reviews_Admin {
                 <p>
                     <button type="button" class="button" id="add-widget"><?php _e('Add Widget', 'brightlocal-reviews'); ?></button>
                 </p>
+
                 <p class="submit">
                     <?php submit_button(__('Save Settings', 'brightlocal-reviews'), 'primary', 'submit', false); ?>
                     <button type="button" class="button button-secondary" id="bl_get_reviews" data-has-reviews="<?php echo $has_reviews ? '1' : '0'; ?>" style="margin-left: 10px;">
@@ -877,5 +910,111 @@ class BL_Reviews_Admin {
         $settings_link = '<a href="' . admin_url('admin.php?page=brightlocal-reviews') . '">' . __('Settings', 'brightlocal-reviews') . '</a>';
         array_unshift($links, $settings_link);
         return $links;
+    }
+
+    /**
+     * Sanitize and validate button style settings.
+     */
+    public function sanitize_button_settings( $input ) {
+        $output = array();
+
+        // Validate colors – accept 3 or 6-digit hex with or without leading #.
+        foreach ( array( 'bg_color' => '#0073aa', 'text_color' => '#ffffff', 'bg_color_hover' => '#005177', 'text_color_hover' => '#ffffff' ) as $key => $default ) {
+            if ( isset( $input[ $key ] ) && preg_match( '/^#?[a-fA-F0-9]{6}$/', $input[ $key ] ) ) {
+                $output[ $key ] = strpos( $input[ $key ], '#' ) === 0 ? $input[ $key ] : '#' . $input[ $key ];
+            } else {
+                $output[ $key ] = $default;
+            }
+        }
+
+        // Border radius – ensure non-negative integers.
+        foreach ( array( 'radius_tl', 'radius_tr', 'radius_br', 'radius_bl' ) as $key ) {
+            $output[ $key ] = isset( $input[ $key ] ) ? max( 0, intval( $input[ $key ] ) ) : 4;
+        }
+
+        return $output;
+    }
+
+    public function render_display_tab( $active_tab = 'display' ) {
+        // Load saved button settings
+        $button_settings = get_option( 'bl_reviews_button_settings', array() );
+
+        $defaults = array(
+            'bg_color'          => '#0073aa',
+            'text_color'        => '#ffffff',
+            'bg_color_hover'    => '#005177',
+            'text_color_hover'  => '#ffffff',
+            'radius_tl'         => 4,
+            'radius_tr'         => 4,
+            'radius_br'         => 4,
+            'radius_bl'         => 4,
+        );
+        $button_settings = wp_parse_args( $button_settings, $defaults );
+
+        $all_equal = ( $button_settings['radius_tl'] === $button_settings['radius_tr'] && $button_settings['radius_tl'] === $button_settings['radius_br'] && $button_settings['radius_tl'] === $button_settings['radius_bl'] );
+
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e( 'BrightLocal Reviews – Display Settings', 'brightlocal-reviews' ); ?></h1>
+
+            <h2 class="nav-tab-wrapper">
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=brightlocal-reviews&tab=widgets' ) ); ?>" class="nav-tab <?php echo ( $active_tab === 'widgets' ) ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e( 'Widgets', 'brightlocal-reviews' ); ?>
+                </a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=brightlocal-reviews&tab=display' ) ); ?>" class="nav-tab <?php echo ( $active_tab === 'display' ) ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e( 'Display', 'brightlocal-reviews' ); ?>
+                </a>
+            </h2>
+
+            <?php settings_errors( 'bl_reviews_button_settings' ); ?>
+
+            <form action="options.php" method="post">
+                <?php settings_fields( 'bl_reviews_display' ); ?>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><?php _e( 'Button Background Color', 'brightlocal-reviews' ); ?></th>
+                        <td>
+                            <input type="text" name="bl_reviews_button_settings[bg_color]" value="<?php echo esc_attr( $button_settings['bg_color'] ); ?>" class="bl-color-field" data-default-color="#0073aa" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php _e( 'Button Text Color', 'brightlocal-reviews' ); ?></th>
+                        <td>
+                            <input type="text" name="bl_reviews_button_settings[text_color]" value="<?php echo esc_attr( $button_settings['text_color'] ); ?>" class="bl-color-field" data-default-color="#ffffff" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php _e( 'Button Background Hover Color', 'brightlocal-reviews' ); ?></th>
+                        <td>
+                            <input type="text" name="bl_reviews_button_settings[bg_color_hover]" value="<?php echo esc_attr( $button_settings['bg_color_hover'] ); ?>" class="bl-color-field" data-default-color="#005177" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php _e( 'Button Text Hover Color', 'brightlocal-reviews' ); ?></th>
+                        <td>
+                            <input type="text" name="bl_reviews_button_settings[text_color_hover]" value="<?php echo esc_attr( $button_settings['text_color_hover'] ); ?>" class="bl-color-field" data-default-color="#ffffff" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php _e( 'Button Border Radius (px)', 'brightlocal-reviews' ); ?></th>
+                        <td>
+                            <fieldset>
+                                <label style="margin-right:10px;">TL <input type="number" id="radius_tl" class="radius-input" name="bl_reviews_button_settings[radius_tl]" value="<?php echo esc_attr( $button_settings['radius_tl'] ); ?>" min="0" style="width:60px;" /></label>
+                                <label style="margin-right:10px;">TR <input type="number" id="radius_tr" class="radius-input" name="bl_reviews_button_settings[radius_tr]" value="<?php echo esc_attr( $button_settings['radius_tr'] ); ?>" min="0" style="width:60px;" /></label>
+                                <label style="margin-right:10px;">BR <input type="number" id="radius_br" class="radius-input" name="bl_reviews_button_settings[radius_br]" value="<?php echo esc_attr( $button_settings['radius_br'] ); ?>" min="0" style="width:60px;" /></label>
+                                <label style="margin-right:10px;">BL <input type="number" id="radius_bl" class="radius-input" name="bl_reviews_button_settings[radius_bl]" value="<?php echo esc_attr( $button_settings['radius_bl'] ); ?>" min="0" style="width:60px;" /></label>
+                                <button type="button" id="bl_link_radius_btn" class="button button-secondary bl-link-radius-toggle" style="vertical-align:middle;" aria-pressed="false" title="<?php esc_attr_e( 'Link corners', 'brightlocal-reviews' ); ?>">
+                                    <span class="dashicons dashicons-admin-links"></span>
+                                </button>
+                                <input type="checkbox" id="bl_link_radius" style="display:none;" 
+                                <?php checked( $all_equal ); ?> />
+                            </fieldset>
+                        </td>
+                    </tr>
+                </table>
+                <?php submit_button( __( 'Save Display Settings', 'brightlocal-reviews' ) ); ?>
+            </form>
+        </div>
+        <?php
     }
 } 

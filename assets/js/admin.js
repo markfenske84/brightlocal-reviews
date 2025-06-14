@@ -309,4 +309,47 @@ jQuery(document).ready(function($) {
     $(document).on('input', 'input[name$="[widget_id]"]', function() {
         updateJsonLink($(this));
     });
+
+    // Initialise WordPress colour pickers for any colour fields
+    if ( typeof $.fn.wpColorPicker !== 'undefined' ) {
+        $('.bl-color-field').wpColorPicker();
+    }
+
+    /* Border-radius corner linking ------------------------- */
+    function syncLinkedRadius(value){
+        if($('#bl_link_radius').is(':checked')){
+            $('#radius_tr, #radius_br, #radius_bl').val(value);
+        }
+    }
+
+    function updateRadiusUI() {
+        if( $('#bl_link_radius').is(':checked') ) {
+            $('#radius_tr, #radius_br, #radius_bl').attr('readonly', 'readonly').closest('label').addClass('hidden');
+            $('#bl_link_radius_btn').attr('aria-pressed', 'true');
+            $('#bl_link_radius_btn .dashicons').removeClass('dashicons-admin-links').addClass('dashicons-editor-unlink');
+            syncLinkedRadius($('#radius_tl').val());
+        } else {
+            $('#radius_tr, #radius_br, #radius_bl').removeAttr('readonly').closest('label').removeClass('hidden');
+            $('#bl_link_radius_btn').attr('aria-pressed', 'false');
+            $('#bl_link_radius_btn .dashicons').removeClass('dashicons-editor-unlink').addClass('dashicons-admin-links');
+        }
+    }
+
+    // Toggle via button
+    $(document).on('click', '#bl_link_radius_btn', function(e){
+        e.preventDefault();
+        $('#bl_link_radius').prop('checked', !$('#bl_link_radius').is(':checked'));
+        updateRadiusUI();
+    });
+
+    // Fallback: still react to manual checkbox change if happens
+    $(document).on('change', '#bl_link_radius', updateRadiusUI);
+
+    // Keep inputs in sync when user types in TL field while linked
+    $(document).on('input', '#radius_tl', function(){
+        syncLinkedRadius( $(this).val() );
+    });
+
+    // On initial load, reflect linked state
+    updateRadiusUI();
 }); 

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: BrightLocal Reviews
  * Description: Display reviews from BrightLocal Showcase Review widget
- * Version: 1.0.11
+ * Version: 1.1.0
  * Author: Mark Fenske
  * Update URI: https://github.com/markfenske84/brightlocal-reviews
  * Text Domain: brightlocal-reviews
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('BL_REVIEWS_VERSION', '1.0.11');
+define('BL_REVIEWS_VERSION', '1.1.0');
 define('BL_REVIEWS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('BL_REVIEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -184,3 +184,34 @@ function bl_reviews_admin_menu_icon_css() {
     </style>';
 }
 add_action( 'admin_head', 'bl_reviews_admin_menu_icon_css' );
+
+// NEW: Front-end inline styles based on button appearance settings.
+function bl_reviews_frontend_button_styles() {
+    $settings = get_option( 'bl_reviews_button_settings', array() );
+
+    $bg_color   = isset( $settings['bg_color'] ) ? $settings['bg_color'] : '#0073aa';
+    $text_color = isset( $settings['text_color'] ) ? $settings['text_color'] : '#ffffff';
+
+    $radius_tl = isset( $settings['radius_tl'] ) ? intval( $settings['radius_tl'] ) : 4;
+    $radius_tr = isset( $settings['radius_tr'] ) ? intval( $settings['radius_tr'] ) : 4;
+    $radius_br = isset( $settings['radius_br'] ) ? intval( $settings['radius_br'] ) : 4;
+    $radius_bl = isset( $settings['radius_bl'] ) ? intval( $settings['radius_bl'] ) : 4;
+
+    $radius_css = sprintf( '%dpx %dpx %dpx %dpx', $radius_tl, $radius_tr, $radius_br, $radius_bl );
+
+    echo '<style type="text/css">';
+    echo '.bl-review-read-more, .bl-reviews-load-more {';
+    echo 'background-color:' . esc_attr( $bg_color ) . ';';
+    echo 'color:' . esc_attr( $text_color ) . ';';
+    echo 'border-radius:' . esc_attr( $radius_css ) . ';';
+    echo '}';
+    // Hover state
+    $bg_color_hover   = isset( $settings['bg_color_hover'] ) ? $settings['bg_color_hover'] : $bg_color;
+    $text_color_hover = isset( $settings['text_color_hover'] ) ? $settings['text_color_hover'] : $text_color;
+    echo '.bl-review-read-more:hover, .bl-reviews-load-more:hover {';
+    echo 'background-color:' . esc_attr( $bg_color_hover ) . ';';
+    echo 'color:' . esc_attr( $text_color_hover ) . ';';
+    echo '}';
+    echo '</style>';
+}
+add_action( 'wp_head', 'bl_reviews_frontend_button_styles', 20 );
