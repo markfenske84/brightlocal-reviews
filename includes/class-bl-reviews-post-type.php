@@ -47,7 +47,7 @@ class BL_Reviews_Post_Type {
             'hierarchical'        => false,
             'menu_position'       => null,
             'supports'            => array('title', 'editor'),
-            'menu_icon'           => 'dashicons-star-filled',
+            'menu_icon'           => BL_REVIEWS_PLUGIN_URL . 'assets/brightlocal.png',
             'show_in_rest'        => true,
             'rest_base'           => 'bl-reviews',
         );

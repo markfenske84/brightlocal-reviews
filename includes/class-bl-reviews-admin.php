@@ -50,7 +50,7 @@ class BL_Reviews_Admin {
             'manage_options',
             'brightlocal-reviews',
             array($this, 'render_settings_page'),
-            'dashicons-star-filled',
+            BL_REVIEWS_PLUGIN_URL . 'assets/brightlocal.png',
             30
         );
 

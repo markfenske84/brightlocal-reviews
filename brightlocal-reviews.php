@@ -167,3 +167,20 @@ function bl_reviews_load_more_ajax() {
 } 
 add_action( 'wp_ajax_bl_load_more_reviews', 'bl_reviews_load_more_ajax' );
 add_action( 'wp_ajax_nopriv_bl_load_more_reviews', 'bl_reviews_load_more_ajax' );
+
+/*
+ * Ensure the custom BrightLocal icons in the WP admin menu display at the
+ * standard 20 × 20 pixel size so they align with native WordPress icons.
+ */
+function bl_reviews_admin_menu_icon_css() {
+    echo '<style>
+        #adminmenu .toplevel_page_brightlocal-reviews .wp-menu-image img,
+        #adminmenu .menu-icon-bl-reviews .wp-menu-image img {
+            width: 20px !important;
+            height: 20px !important;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+    </style>';
+}
+add_action( 'admin_head', 'bl_reviews_admin_menu_icon_css' );
