@@ -440,35 +440,6 @@ class BL_Reviews_Admin {
         </div>
         <script>
         jQuery(document).ready(function($) {
-            // Add new widget row
-            $('#add-widget').on('click', function() {
-                var index = $('.widget-row').length;
-                var newRow = `
-                    <tr class="widget-row">
-                        <td>
-                            <input type="text" 
-                                   name="bl_reviews_widgets[${index}][widget_id]" 
-                                   class="regular-text"
-                                   placeholder="a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0">
-                        </td>
-                        <td>
-                            <input type="text" 
-                                   name="bl_reviews_widgets[${index}][label]" 
-                                   class="regular-text"
-                                   placeholder="<?php _e('e.g., Downtown Location', 'brightlocal-reviews'); ?>">
-                        </td>
-                        <td>
-                            <button type="button" class="button remove-widget"><?php _e('Remove', 'brightlocal-reviews'); ?></button>
-                        </td>
-                    </tr>
-                `;
-                $('#bl-widgets-table tbody').append(newRow);
-            });
-
-            // Remove widget row
-            $(document).on('click', '.remove-widget', function() {
-                $(this).closest('tr').remove();
-            });
 
             // Delete All Reviews button click handler
             $('#bl_delete_all_reviews').on('click', function() {

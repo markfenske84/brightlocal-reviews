@@ -2,7 +2,7 @@
 /**
  * Plugin Name: BrightLocal Reviews
  * Description: Display reviews from BrightLocal Showcase Review widget
- * Version: 1.1.4
+ * Version: 1.1.6
  * Author: Mark Fenske
  * Update URI: https://github.com/markfenske84/brightlocal-reviews
  * Text Domain: brightlocal-reviews
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('BL_REVIEWS_VERSION', '1.1.4');
+define('BL_REVIEWS_VERSION', '1.1.6');
 define('BL_REVIEWS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('BL_REVIEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -36,8 +36,23 @@ $bl_reviews_update_checker = PucFactory::buildUpdateChecker(
     'brightlocal-reviews'                                  // Plugin slug
 );
 $bl_reviews_update_checker->setBranch( 'main' );
-// Uncomment the next line if you attach custom release asset ZIPs instead of the automatically generated archive.
-// $bl_reviews_update_checker->getVcsApi()->enableReleaseAssets();
+// Enable release assets for proper GitHub release downloads
+$bl_reviews_update_checker->getVcsApi()->enableReleaseAssets();
+
+// Add debug hook to check for updates manually (remove after testing)
+add_action('admin_init', function() {
+    if (isset($_GET['bl_check_updates']) && current_user_can('manage_options')) {
+        global $bl_reviews_update_checker;
+        $bl_reviews_update_checker->checkForUpdates();
+        wp_redirect(admin_url('plugins.php?bl_update_checked=1'));
+        exit;
+    }
+    if (isset($_GET['bl_update_checked'])) {
+        add_action('admin_notices', function() {
+            echo '<div class="notice notice-info"><p>Update check forced. Check the plugins page for available updates.</p></div>';
+        });
+    }
+});
 
 // Initialize the plugin
 function bl_reviews_init() {
