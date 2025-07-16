@@ -3,6 +3,8 @@
 class BL_Reviews_Block {
     public function __construct() {
         add_action('init', array($this, 'register_block'), 5);
+        // Register shortcode so reviews can be embedded without the block editor.
+        add_shortcode('brightlocal_reviews', array($this, 'shortcode_handler'));
     }
 
     public function register_block() {
@@ -15,14 +17,14 @@ class BL_Reviews_Block {
         register_block_type(
             BL_REVIEWS_PLUGIN_DIR . 'build',
             array(
-                'render_callback' => array($this, 'render_block'),
+                // Remove render_callback to let block.json handle the render file
                 'editor_script' => 'brightlocal-reviews-editor',
                 'editor_style' => 'brightlocal-reviews-editor',
                 'style' => 'brightlocal-reviews-style',
                 'script' => 'brightlocal-reviews-view',
                 'dependencies' => $asset_file['dependencies']
             )
-        );
+        ); 
 
         // Register editor script
         wp_register_script(
@@ -80,8 +82,8 @@ class BL_Reviews_Block {
 
         // Handle item limit attribute
         $limit_items   = isset($attributes['limitItems']) ? (bool) $attributes['limitItems'] : false;
-        $items_per_page = isset($attributes['itemsPerPage']) ? intval($attributes['itemsPerPage']) : 9;
-
+        $items_per_page = isset($attributes['itemsPerPage']) ? intval($attributes['itemsPerPage']) : 3;
+        
         if ( $limit_items && $items_per_page > 0 ) {
             $args['posts_per_page'] = $items_per_page;
         }
@@ -230,5 +232,56 @@ class BL_Reviews_Block {
         <?php endif; ?>
         <?php
         return ob_get_clean();
+    }
+
+    /**
+     * Shortcode handler – maps shortcode attributes to block attributes and
+     * re-uses the same PHP renderer so the output & logic stay in one place.
+     *
+     * Example usage:
+     * [brightlocal_reviews displayType="grid" showAuthor="true" showDate="false" limitItems="true" itemsPerPage="5" reviewLabel="test" showArrows="false"]
+     *
+     * @param array  $atts    Shortcode attributes supplied by the user.
+     * @param string $content Not used (present for shortcode signature compatibility).
+     * @return string Rendered HTML for the reviews list.
+     */
+    public function shortcode_handler($atts, $content = null) {
+        // Default attribute values (use lowercase keys to match WordPress normalization)
+        $defaults = array(
+            'displaytype'  => 'grid',
+            'showauthor'   => 'true',
+            'showdate'     => 'true',
+            'showsource'   => 'true',
+            'showarrows'   => 'true',
+            'limititems'   => 'false',
+            'itemsperpage' => '3',
+            'reviewlabel'  => 'all',
+        );
+
+        // Merge user attributes with defaults (WordPress handles case-insensitivity)
+        $atts = shortcode_atts( $defaults, $atts, 'brightlocal_reviews' );
+
+        // Cast to expected types (now that keys are lowercase)
+        $atts['showauthor']   = filter_var($atts['showauthor'], FILTER_VALIDATE_BOOLEAN);
+        $atts['showdate']     = filter_var($atts['showdate'], FILTER_VALIDATE_BOOLEAN);
+        $atts['showsource']   = filter_var($atts['showsource'], FILTER_VALIDATE_BOOLEAN);
+        $atts['showarrows']   = filter_var($atts['showarrows'], FILTER_VALIDATE_BOOLEAN);
+        $atts['limititems']   = filter_var($atts['limititems'], FILTER_VALIDATE_BOOLEAN);
+        $atts['itemsperpage'] = intval($atts['itemsperpage']);
+
+        // Map to capitalized keys expected by render_block (if needed)
+        $mapped_atts = array(
+            'displayType'  => $atts['displaytype'],
+            'showAuthor'   => $atts['showauthor'],
+            'showDate'     => $atts['showdate'],
+            'showSource'   => $atts['showsource'],
+            'showArrows'   => $atts['showarrows'],
+            'limitItems'   => $atts['limititems'],
+            'itemsPerPage' => $atts['itemsperpage'],
+            'reviewLabel'  => $atts['reviewlabel'],
+        );
+
+        // Re-use the existing render_block method
+        return $this->render_block($mapped_atts);
     }
 } 

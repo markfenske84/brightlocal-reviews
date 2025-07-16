@@ -3,12 +3,10 @@
   !*** ./src/view.js ***!
   \*********************/
 document.addEventListener('DOMContentLoaded', function () {
-  console.log('DOM Content Loaded - Initializing Read More functionality');
-
   // Read More functionality
   const readMoreButtons = document.querySelectorAll('.bl-review-read-more');
 
-  // NEW: Hide buttons that are not needed (content not truncated)
+  // Hide buttons that are not needed (content not truncated)
   readMoreButtons.forEach(button => {
     const contentWrapper = button.previousElementSibling;
     if (!contentWrapper) {
@@ -23,17 +21,14 @@ document.addEventListener('DOMContentLoaded', function () {
       button.style.display = 'none';
     }
   });
-  console.log('Found Read More buttons:', readMoreButtons.length);
 
   // Track if a click is in progress to prevent double-triggering
   let isClickInProgress = false;
   readMoreButtons.forEach((button, index) => {
-    console.log(`Setting up button ${index + 1}`);
-
     // Verify the button structure
     const contentWrapper = button.previousElementSibling;
     if (!contentWrapper) {
-      console.error(`Button ${index + 1} is missing its content wrapper`);
+      // Button missing content wrapper, skip
       return;
     }
 
@@ -45,11 +40,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleClick(e) {
       // Prevent multiple triggers
       if (isClickInProgress) {
-        console.log('Click already in progress, ignoring');
         return;
       }
       isClickInProgress = true;
-      console.log('Button clicked!');
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
@@ -57,26 +50,22 @@ document.addEventListener('DOMContentLoaded', function () {
       // Get the content wrapper again to ensure we have the latest reference
       const contentWrapper = this.previousElementSibling;
       if (!contentWrapper) {
-        console.error('Content wrapper not found');
+        // Content wrapper not found: abort
         isClickInProgress = false;
         return;
       }
-      console.log('Content wrapper:', contentWrapper);
-      console.log('Current classes before toggle:', contentWrapper.className);
       const isExpanded = contentWrapper.classList.contains('expanded');
-      console.log('Is currently expanded:', isExpanded);
       if (!isExpanded) {
-        console.log('Adding expanded class');
+        // expanding content
         contentWrapper.classList.add('expanded');
         this.textContent = 'Show Less';
         this.setAttribute('aria-expanded', 'true');
       } else {
-        console.log('Removing expanded class');
+        // collapsing content
         contentWrapper.classList.remove('expanded');
         this.textContent = 'Read More';
         this.setAttribute('aria-expanded', 'false');
       }
-      console.log('Classes after toggle:', contentWrapper.className);
 
       /* If inside carousel, adjust wrapper height after transition */
       const reviewItemEl = this.closest('.bl-review-item');

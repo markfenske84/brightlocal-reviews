@@ -277,3 +277,23 @@ label.hidden{display:none;}
 .bl-radius-link .dashicons{font-size:18px;vertical-align:middle;}
 
 .bl-radius-wrapper{display:inline-flex;align-items:center;gap:8px;} 
+
+/* Display Settings Two-Column Layout */
+.bl-display-settings-container {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+.bl-display-settings-left {
+  flex: 2;
+  min-width: 0;
+}
+.bl-display-settings-right {
+  flex: 1;
+  max-width: 380px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+} 

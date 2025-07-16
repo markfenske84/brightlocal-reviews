@@ -948,71 +948,110 @@ class BL_Reviews_Admin {
 
             <?php settings_errors( 'bl_reviews_button_settings' ); ?>
 
-            <form action="options.php" method="post">
-                <?php settings_fields( 'bl_reviews_display' ); ?>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><?php _e( 'Button Background Color', 'brightlocal-reviews' ); ?></th>
-                        <td>
-                            <input type="color" name="bl_reviews_button_settings[bg_color]" value="<?php echo esc_attr( $button_settings['bg_color'] ); ?>" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><?php _e( 'Button Text Color', 'brightlocal-reviews' ); ?></th>
-                        <td>
-                            <input type="color" name="bl_reviews_button_settings[text_color]" value="<?php echo esc_attr( $button_settings['text_color'] ); ?>" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><?php _e( 'Button Background Hover Color', 'brightlocal-reviews' ); ?></th>
-                        <td>
-                            <input type="color" name="bl_reviews_button_settings[bg_color_hover]" value="<?php echo esc_attr( $button_settings['bg_color_hover'] ); ?>" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><?php _e( 'Button Text Hover Color', 'brightlocal-reviews' ); ?></th>
-                        <td>
-                            <input type="color" name="bl_reviews_button_settings[text_color_hover]" value="<?php echo esc_attr( $button_settings['text_color_hover'] ); ?>" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><?php _e( 'Button Border Radius (px)', 'brightlocal-reviews' ); ?></th>
-                        <td>
-                            <div class="bl-radius-wrapper"><fieldset class="bl-radius-grid">
-                                <label class="bl-radius-cell">TL<br><input type="number" id="radius_tl" class="radius-input" name="bl_reviews_button_settings[radius_tl]" value="<?php echo esc_attr( $button_settings['radius_tl'] ); ?>" min="0" /></label>
-                                <label class="bl-radius-cell">TR<br><input type="number" id="radius_tr" class="radius-input" name="bl_reviews_button_settings[radius_tr]" value="<?php echo esc_attr( $button_settings['radius_tr'] ); ?>" min="0" /></label>
-                                <label class="bl-radius-cell"><input type="number" id="radius_bl" class="radius-input" name="bl_reviews_button_settings[radius_bl]" value="<?php echo esc_attr( $button_settings['radius_bl'] ); ?>" min="0" /><br>BL</label>
-                                <label class="bl-radius-cell"><input type="number" id="radius_br" class="radius-input" name="bl_reviews_button_settings[radius_br]" value="<?php echo esc_attr( $button_settings['radius_br'] ); ?>" min="0" /><br>BR</label>
-                            </fieldset>
-                            <div class="bl-radius-link bl-link-radius-toggle">
-                                <button type="button" id="bl_link_radius_btn" class="button button-secondary" aria-pressed="false" title="<?php esc_attr_e( 'Link corners', 'brightlocal-reviews' ); ?>">
-                                    <span class="dashicons dashicons-admin-links"></span>
-                                </button>
-                                <input type="checkbox" id="bl_link_radius" style="display:none;" <?php checked( $all_equal ); ?> />
-                            </div></div>
-                        </td>
-                    </tr>
-                    <tr>
-                         <th scope="row"><?php _e( 'Button Text Transform', 'brightlocal-reviews' ); ?></th>
-                         <td>
-                             <select name="bl_reviews_button_settings[text_transform]">
-                                 <?php
-                                 $options = array(
-                                     'none'       => __( 'None', 'brightlocal-reviews' ),
-                                     'capitalize' => __( 'Capitalize', 'brightlocal-reviews' ),
-                                     'uppercase'  => __( 'Uppercase', 'brightlocal-reviews' ),
-                                     'lowercase'  => __( 'Lowercase', 'brightlocal-reviews' ),
-                                 );
-                                 foreach ( $options as $value => $label ) {
-                                     printf( '<option value="%s" %s>%s</option>', esc_attr( $value ), selected( $button_settings['text_transform'], $value, false ), esc_html( $label ) );
-                                 }
-                                 ?>
-                             </select>
-                         </td>
-                     </tr>
-                </table>
-                <?php submit_button( __( 'Save Display Settings', 'brightlocal-reviews' ) ); ?>
-            </form>
+            <div class="bl-display-settings-container">
+                <div class="bl-display-settings-left">
+                    <form action="options.php" method="post">
+                        <?php settings_fields( 'bl_reviews_display' ); ?>
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row"><?php _e( 'Button Background Color', 'brightlocal-reviews' ); ?></th>
+                                <td>
+                                    <input type="color" name="bl_reviews_button_settings[bg_color]" value="<?php echo esc_attr( $button_settings['bg_color'] ); ?>" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><?php _e( 'Button Text Color', 'brightlocal-reviews' ); ?></th>
+                                <td>
+                                    <input type="color" name="bl_reviews_button_settings[text_color]" value="<?php echo esc_attr( $button_settings['text_color'] ); ?>" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><?php _e( 'Button Background Hover Color', 'brightlocal-reviews' ); ?></th>
+                                <td>
+                                    <input type="color" name="bl_reviews_button_settings[bg_color_hover]" value="<?php echo esc_attr( $button_settings['bg_color_hover'] ); ?>" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><?php _e( 'Button Text Hover Color', 'brightlocal-reviews' ); ?></th>
+                                <td>
+                                    <input type="color" name="bl_reviews_button_settings[text_color_hover]" value="<?php echo esc_attr( $button_settings['text_color_hover'] ); ?>" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><?php _e( 'Button Border Radius (px)', 'brightlocal-reviews' ); ?></th>
+                                <td>
+                                    <div class="bl-radius-wrapper"><fieldset class="bl-radius-grid">
+                                        <label class="bl-radius-cell">TL<br><input type="number" id="radius_tl" class="radius-input" name="bl_reviews_button_settings[radius_tl]" value="<?php echo esc_attr( $button_settings['radius_tl'] ); ?>" min="0" /></label>
+                                        <label class="bl-radius-cell">TR<br><input type="number" id="radius_tr" class="radius-input" name="bl_reviews_button_settings[radius_tr]" value="<?php echo esc_attr( $button_settings['radius_tr'] ); ?>" min="0" /></label>
+                                        <label class="bl-radius-cell"><input type="number" id="radius_bl" class="radius-input" name="bl_reviews_button_settings[radius_bl]" value="<?php echo esc_attr( $button_settings['radius_bl'] ); ?>" min="0" /><br>BL</label>
+                                        <label class="bl-radius-cell"><input type="number" id="radius_br" class="radius-input" name="bl_reviews_button_settings[radius_br]" value="<?php echo esc_attr( $button_settings['radius_br'] ); ?>" min="0" /><br>BR</label>
+                                    </fieldset>
+                                    <div class="bl-radius-link bl-link-radius-toggle">
+                                        <button type="button" id="bl_link_radius_btn" class="button button-secondary" aria-pressed="false" title="<?php esc_attr_e( 'Link corners', 'brightlocal-reviews' ); ?>">
+                                            <span class="dashicons dashicons-admin-links"></span>
+                                        </button>
+                                        <input type="checkbox" id="bl_link_radius" style="display:none;" <?php checked( $all_equal ); ?> />
+                                    </div></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                 <th scope="row"><?php _e( 'Button Text Transform', 'brightlocal-reviews' ); ?></th>
+                                 <td>
+                                     <select name="bl_reviews_button_settings[text_transform]">
+                                         <?php
+                                         $options = array(
+                                             'none'       => __( 'None', 'brightlocal-reviews' ),
+                                             'capitalize' => __( 'Capitalize', 'brightlocal-reviews' ),
+                                             'uppercase'  => __( 'Uppercase', 'brightlocal-reviews' ),
+                                             'lowercase'  => __( 'Lowercase', 'brightlocal-reviews' ),
+                                         );
+                                         foreach ( $options as $value => $label ) {
+                                             printf( '<option value="%s" %s>%s</option>', esc_attr( $value ), selected( $button_settings['text_transform'], $value, false ), esc_html( $label ) );
+                                         }
+                                         ?>
+                                     </select>
+                                 </td>
+                             </tr>
+                        </table>
+                        <?php submit_button( __( 'Save Display Settings', 'brightlocal-reviews' ) ); ?>
+                    </form>
+                </div><!-- .bl-display-settings-left -->
+
+                <div class="bl-display-settings-right">
+                    <h2><?php _e( 'Shortcode Usage', 'brightlocal-reviews' ); ?></h2>
+                    <p>
+                        <?php
+                        printf(
+                            /* translators: 1: Opening code tag, 2: closing code tag */
+                            __( 'You can also embed your reviews anywhere (widgets, Classic editor, page builders) with the %1$s[brightlocal_reviews]%2$s shortcode.', 'brightlocal-reviews' ),
+                            '<code>',
+                            '</code>' 
+                        );
+                        ?>
+                    </p>
+                    <p>
+                        <?php _e( 'All attributes are optional and mirror the block controls:', 'brightlocal-reviews' ); ?><br/>
+                        <code>displayType="grid|list|carousel"</code>,
+                        <code>showAuthor="true|false"</code>,
+                        <code>showDate="true|false"</code>,
+                        <code>showSource="true|false"</code>,
+                        <code>showArrows="true|false"</code>,
+                        <code>limitItems="true|false"</code>,
+                        <code>itemsPerPage="number"</code>,
+                        <code>reviewLabel="slug|all"</code>
+                    </p>
+                    <p>
+                        <?php
+                        printf(
+                            /* translators: 1: opening code tag, 2: closing code tag */
+                            __( 'Example: %1$s[brightlocal_reviews displayType="list" itemsPerPage="5" limitItems="true" showAuthor="false"]%2$s', 'brightlocal-reviews' ),
+                            '<code>',
+                            '</code>'
+                        );
+                        ?>
+                    </p>
+                </div><!-- .bl-display-settings-right -->
+            </div><!-- .bl-display-settings-container -->
         </div>
         <?php
     }

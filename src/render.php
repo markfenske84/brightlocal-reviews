@@ -13,6 +13,14 @@ $args = array(
     'post_status' => 'publish'
 );
 
+// Handle item limit attribute
+$limit_items = isset($attributes['limitItems']) ? (bool) $attributes['limitItems'] : false;
+$items_per_page = isset($attributes['itemsPerPage']) ? intval($attributes['itemsPerPage']) : 3;
+
+if ($limit_items && $items_per_page > 0) {
+    $args['posts_per_page'] = $items_per_page;
+}
+
 // Add taxonomy query if a specific label is selected
 if (isset($attributes['reviewLabel']) && $attributes['reviewLabel'] !== 'all') {
     $args['tax_query'] = array(
@@ -59,7 +67,6 @@ $display_type = isset($attributes['displayType']) ? $attributes['displayType'] :
 $show_author = isset($attributes['showAuthor']) ? $attributes['showAuthor'] : true;
 $show_date = isset($attributes['showDate']) ? $attributes['showDate'] : true;
 $show_source = isset($attributes['showSource']) ? $attributes['showSource'] : true;
-$show_link = isset($attributes['showLink']) ? $attributes['showLink'] : true;
 $show_arrows = isset($attributes['showArrows']) ? $attributes['showArrows'] : true;
 
 $wrapper_class = 'bl-reviews-wrapper bl-reviews-' . esc_attr($display_type);
@@ -70,6 +77,20 @@ $source_icons = array(
     'facebook' => 'https://www.facebook.com/favicon.ico',
     'yelp' => 'https://www.yelp.com/favicon.ico',
     'tripadvisor' => 'https://www.tripadvisor.com/favicon.ico',
+    'yahoo' => 'https://www.yahoo.com/favicon.ico',
+    'bing' => 'https://www.bing.com/favicon.ico',
+    'trustpilot' => 'https://www.trustpilot.com/favicon.ico',
+    'homeadvisor' => 'https://www.homeadvisor.com/favicon.ico',
+    'angieslist' => 'https://www.angieslist.com/favicon.ico',
+    'thumbtack' => 'https://www.thumbtack.com/favicon.ico',
+    'houzz' => 'https://www.houzz.com/favicon.ico',
+    'zillow' => 'https://www.zillow.com/favicon.ico',
+    'realtor' => 'https://www.realtor.com/favicon.ico',
+    'healthgrades' => 'https://www.healthgrades.com/favicon.ico',
+    'zocdoc' => 'https://www.zocdoc.com/favicon.ico',
+    'vitals' => 'https://www.vitals.com/favicon.ico',
+    'opentable' => 'https://www.opentable.com/favicon.ico',
+    'resy' => 'https://www.resy.com/favicon.ico',
     'default' => 'https://www.brightlocal.com/favicon.ico'
 );
 ?>
@@ -77,8 +98,6 @@ $source_icons = array(
     <?php foreach ($reviews as $review): 
         $source = strtolower($review['source']);
         $source_icon = isset($source_icons[$source]) ? $source_icons[$source] : $source_icons['default'];
-        $content_length = strlen(strip_tags($review['reviewBody']));
-        $needs_read_more = $content_length > 200;
     ?>
         <div class="bl-review-item">
             <div class="bl-review-header">
@@ -91,52 +110,53 @@ $source_icons = array(
                     ?>
                 </div>
                 
-                <div class="bl-review-meta-right">
-                    <?php if ($show_date && $review['datePublished']): ?>
-                        <span class="bl-review-date"><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($review['datePublished']))); ?></span>
+                <div class="bl-review-meta">
+                    <?php if ($show_date && !empty($review['datePublished'])): ?>
+                        <small class="bl-review-date"><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($review['datePublished']))); ?></small>
                     <?php endif; ?>
-                    
-                    <?php if ($show_source && $review['source']): ?>
+                    <?php if ($show_source && !empty($review['source'])): ?>
                         <span class="bl-review-source">
                             <img src="<?php echo esc_url($source_icon); ?>" alt="<?php echo esc_attr($review['source']); ?>" />
-                            <?php if (strtolower($review['source']) !== 'google'): ?>
-                                <?php echo esc_html(ucfirst($review['source'])); ?>
-                            <?php endif; ?>
                         </span>
                     <?php endif; ?>
                 </div>
             </div>
             
-            <?php if ($show_author && $review['author']): ?>
-                <div class="bl-review-author"><?php echo esc_html($review['author']); ?></div>
+            <?php if ($show_author && !empty($review['author'])): ?>
+                <h3 class="bl-review-author"><?php echo esc_html($review['author']); ?></h3>
             <?php endif; ?>
             
             <?php 
             $content = wp_kses_post($review['reviewBody']);
             $content_length = strlen(strip_tags($content));
-            $needs_read_more = $content_length > 200;
-            $truncated_content = $needs_read_more ? wp_trim_words($content, 30, '...') : $content;
+            
+            // Different handling for list vs grid mode
+            if ($display_type === 'list') {
+                // In list mode, only truncate if content is very long
+                $needs_read_more = $content_length > 100;
+                $truncated_content = $needs_read_more ? wp_trim_words($content, 20, '...') : $content;
+            } else {
+                // In grid mode, truncate more aggressively
+                $needs_read_more = $content_length > 200;
+                $truncated_content = $needs_read_more ? wp_trim_words($content, 30, '...') : $content;
+            }
             ?>
-            <div class="bl-review-content<?php echo $needs_read_more ? ' collapsed' : ''; ?>">
-                <div class="bl-review-content-full" style="display: none;">
-                    <?php echo $content; ?>
-                </div>
-                <div class="bl-review-content-preview">
-                    <?php echo $truncated_content; ?>
-                </div>
+            <div class="bl-review-content<?php echo $needs_read_more ? ' bl-review-content-truncated' : ''; ?>">
+                <?php echo $content; ?>
             </div>
             
             <?php if ($needs_read_more): ?>
-                <div class="bl-review-read-more">
+                <button type="button" class="bl-review-read-more" aria-expanded="false">
                     Read More
-                </div>
-            <?php endif; ?>
-            
-            <?php if ($show_link && $review['reviewLink']): ?>
-                <a href="<?php echo esc_url($review['reviewLink']); ?>" class="bl-review-link" target="_blank" rel="noopener noreferrer">
-                    <?php esc_html_e('View Original', 'brightlocal-reviews'); ?>
-                </a>
+                </button>
             <?php endif; ?>
         </div>
     <?php endforeach; ?>
-</div> 
+</div>
+<?php
+// Show Load More button if more reviews are available
+if ($display_type !== 'carousel' && $limit_items && $reviews_query->found_posts > $items_per_page): ?>
+    <button type="button" class="bl-reviews-load-more" data-offset="<?php echo esc_attr($items_per_page); ?>" data-per-page="<?php echo esc_attr($items_per_page); ?>" data-label="<?php echo esc_attr(isset($attributes['reviewLabel']) ? $attributes['reviewLabel'] : 'all'); ?>">
+        <?php esc_html_e('Load More', 'brightlocal-reviews'); ?>
+    </button>
+<?php endif; ?> 
