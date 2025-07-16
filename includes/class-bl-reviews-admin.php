@@ -1038,13 +1038,13 @@ class BL_Reviews_Admin {
                         <code>showArrows="true|false"</code>,
                         <code>limitItems="true|false"</code>,
                         <code>itemsPerPage="number"</code>,
-                        <code>reviewLabel="slug|all"</code>
+                        <code>reviewLabel="id|slug|all"</code>
                     </p>
                     <p>
                         <?php
                         printf(
                             /* translators: 1: opening code tag, 2: closing code tag */
-                            __( 'Example: %1$s[brightlocal_reviews displayType="list" itemsPerPage="5" limitItems="true" showAuthor="false"]%2$s', 'brightlocal-reviews' ),
+                            __( 'Example: %1$s[brightlocal_reviews displayType="list" itemsPerPage="5" limitItems="true" reviewLabel="23" showAuthor="false"]%2$s', 'brightlocal-reviews' ),
                             '<code>',
                             '</code>'
                         );

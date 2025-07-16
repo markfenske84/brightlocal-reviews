@@ -90,11 +90,13 @@ class BL_Reviews_Block {
 
         // Add taxonomy query if a specific label is selected
         if (isset($attributes['reviewLabel']) && $attributes['reviewLabel'] !== 'all') {
+            $label_value = $attributes['reviewLabel'];
+            $label_field = is_numeric($label_value) ? 'term_id' : 'slug';
             $args['tax_query'] = array(
                 array(
                     'taxonomy' => 'bl_review_label',
-                    'field' => 'slug',
-                    'terms' => $attributes['reviewLabel']
+                    'field'    => $label_field,
+                    'terms'    => $label_value,
                 )
             );
         }
@@ -239,7 +241,7 @@ class BL_Reviews_Block {
      * re-uses the same PHP renderer so the output & logic stay in one place.
      *
      * Example usage:
-     * [brightlocal_reviews displayType="grid" showAuthor="true" showDate="false" limitItems="true" itemsPerPage="5" reviewLabel="test" showArrows="false"]
+     * [brightlocal_reviews displayType="grid" showAuthor="true" showDate="false" limitItems="true" itemsPerPage="5" reviewLabel="23" showArrows="false"]
      *
      * @param array  $atts    Shortcode attributes supplied by the user.
      * @param string $content Not used (present for shortcode signature compatibility).

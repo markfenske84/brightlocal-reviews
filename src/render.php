@@ -23,11 +23,13 @@ if ($limit_items && $items_per_page > 0) {
 
 // Add taxonomy query if a specific label is selected
 if (isset($attributes['reviewLabel']) && $attributes['reviewLabel'] !== 'all') {
+    $label_value = $attributes['reviewLabel'];
+    $label_field = is_numeric($label_value) ? 'term_id' : 'slug';
     $args['tax_query'] = array(
         array(
             'taxonomy' => 'bl_review_label',
-            'field' => 'slug',
-            'terms' => $attributes['reviewLabel']
+            'field'    => $label_field,
+            'terms'    => $label_value,
         )
     );
 }

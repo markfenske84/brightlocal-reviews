@@ -102,7 +102,7 @@ function bl_reviews_load_more_ajax() {
         $args['tax_query'] = array(
             array(
                 'taxonomy' => 'bl_review_label',
-                'field'    => 'slug',
+                'field'    => is_numeric( $label ) ? 'term_id' : 'slug',
                 'terms'    => $label,
             ),
         );
