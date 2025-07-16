@@ -112,6 +112,7 @@
   font-weight: 600;
   font-size: 1.1em;
   margin: 0.5em 0;
+  color: inherit !important;
 }
 
 .bl-review-content {
