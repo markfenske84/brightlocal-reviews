@@ -37,7 +37,7 @@ class BL_Reviews_Post_Type {
 
         $args = array(
             'labels'              => $labels,
-            'public'              => true,
+            'public'              => false,
             'show_ui'             => true,
             'show_in_menu'        => 'brightlocal-reviews',
             'query_var'           => true,
