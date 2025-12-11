@@ -248,6 +248,11 @@ class BL_Reviews_Block {
      * @return string Rendered HTML for the reviews list.
      */
     public function shortcode_handler($atts, $content = null) {
+        // Enqueue the frontend stylesheet and scripts for shortcode usage.
+        // These are automatically loaded for blocks, but shortcodes require explicit enqueuing.
+        wp_enqueue_style('brightlocal-reviews-style');
+        wp_enqueue_script('brightlocal-reviews-view');
+
         // Default attribute values (use lowercase keys to match WordPress normalization)
         $defaults = array(
             'displaytype'  => 'grid',
