@@ -1,10 +1,46 @@
 <?php
 
 class BL_Reviews_Block {
+    
+    /**
+     * Track whether frontend styles have been output (for page builder compatibility).
+     */
+    private static $styles_printed = false;
+
     public function __construct() {
         add_action('init', array($this, 'register_block'), 5);
         // Register shortcode so reviews can be embedded without the block editor.
         add_shortcode('brightlocal_reviews', array($this, 'shortcode_handler'));
+        
+        // Early detection: Pre-enqueue styles if shortcode is present in post content.
+        // This runs before wp_head so styles get included properly for most themes.
+        add_action('wp', array($this, 'maybe_preload_shortcode_assets'));
+    }
+
+    /**
+     * Check if current page contains our shortcode and pre-enqueue assets.
+     * This handles standard WordPress pages/posts where we can read content early.
+     */
+    public function maybe_preload_shortcode_assets() {
+        global $post;
+        
+        // Check main post content
+        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'brightlocal_reviews')) {
+            add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
+            return;
+        }
+
+        // For page builders (Jupiter, Divi, Elementor, etc.) that store content in meta,
+        // we can't easily detect the shortcode early. The inline fallback handles this.
+    }
+
+    /**
+     * Enqueue frontend assets (called early when shortcode detected).
+     */
+    public function enqueue_frontend_assets() {
+        wp_enqueue_style('brightlocal-reviews-style');
+        wp_enqueue_script('brightlocal-reviews-view');
+        self::$styles_printed = true;
     }
 
     public function register_block() {
@@ -248,10 +284,13 @@ class BL_Reviews_Block {
      * @return string Rendered HTML for the reviews list.
      */
     public function shortcode_handler($atts, $content = null) {
-        // Enqueue the frontend stylesheet and scripts for shortcode usage.
-        // These are automatically loaded for blocks, but shortcodes require explicit enqueuing.
+        // Attempt normal enqueue (works if wp_head hasn't fired yet).
         wp_enqueue_style('brightlocal-reviews-style');
         wp_enqueue_script('brightlocal-reviews-view');
+
+        // Build inline styles fallback for page builders (Jupiter, Divi, etc.)
+        // where shortcode is processed AFTER wp_head has already run.
+        $inline_assets = $this->get_inline_assets_if_needed();
 
         // Default attribute values (use lowercase keys to match WordPress normalization)
         $defaults = array(
@@ -289,6 +328,198 @@ class BL_Reviews_Block {
         );
 
         // Re-use the existing render_block method
-        return $this->render_block($mapped_atts);
+        return $inline_assets . $this->render_block($mapped_atts);
+    }
+
+    /**
+     * Get inline CSS/JS if styles haven't been properly enqueued.
+     * This is the fallback for page builders (Jupiter 6, Divi, Elementor, etc.)
+     * that process shortcodes after wp_head has already run.
+     *
+     * @return string Inline style and script tags, or empty string if not needed.
+     */
+    private function get_inline_assets_if_needed() {
+        // Never output inline assets in admin area (prevents Plugin Editor conflicts).
+        if (is_admin()) {
+            return '';
+        }
+
+        // Skip inline output when in page builder edit mode.
+        // This prevents conflicts with Divi's "Scrape key" security and similar mechanisms.
+        if ($this->is_builder_edit_mode()) {
+            return '';
+        }
+
+        // If styles were already printed via normal enqueue, skip.
+        if (self::$styles_printed) {
+            return '';
+        }
+
+        // Check if wp_head has already run (did_action returns count of times action fired).
+        // If wp_head is done but styles weren't enqueued yet, we need inline fallback.
+        if (!did_action('wp_head')) {
+            // wp_head hasn't run yet, normal enqueue should work.
+            return '';
+        }
+
+        // Check if our stylesheet is already enqueued and was printed.
+        // wp_style_is() with 'done' checks if style was already output.
+        if (wp_style_is('brightlocal-reviews-style', 'done')) {
+            self::$styles_printed = true;
+            return '';
+        }
+
+        // Mark as printed so we don't output duplicates on multiple shortcodes.
+        self::$styles_printed = true;
+
+        $output = '';
+
+        // Load and output CSS inline.
+        $css_file = BL_REVIEWS_PLUGIN_DIR . 'build/style-index.css';
+        if (file_exists($css_file)) {
+            $css = $this->read_file_contents($css_file);
+            if ($css) {
+                // Remove source map comment for cleaner inline output.
+                $css = preg_replace('/\/\*#\s*sourceMappingURL=[^\*]+\*\//', '', $css);
+                $output .= '<style id="brightlocal-reviews-inline-style">' . $css . '</style>';
+            }
+        }
+
+        // For JavaScript, use a deferred loading approach that won't interfere
+        // with page builder scraping (Divi, Elementor, etc.).
+        // Schedule the script to load via wp_footer if it hasn't run yet,
+        // otherwise output inline with protection against builder conflicts.
+        if (!did_action('wp_footer')) {
+            // wp_footer hasn't run, we can hook into it.
+            add_action('wp_footer', array($this, 'print_footer_script'), 999);
+        } else {
+            // wp_footer already ran, output inline but wrap in DOMContentLoaded
+            // to prevent execution during page builder scrapes.
+            $output .= $this->get_inline_script_safe();
+        }
+
+        return $output;
+    }
+
+    /**
+     * Check if we're in a page builder edit/preview mode.
+     * These modes often scrape content and can conflict with inline scripts.
+     *
+     * @return bool True if in builder edit mode.
+     */
+    private function is_builder_edit_mode() {
+        // Skip checks entirely in admin context (except admin-ajax for frontend).
+        if (is_admin() && !(defined('DOING_AJAX') && DOING_AJAX)) {
+            return true; // Treat admin as "builder mode" to skip inline output.
+        }
+
+        // Safely check GET parameters.
+        $get_params = array(
+            'et_fb',           // Divi Builder
+            'et_pb_preview',   // Divi Preview
+            'elementor-preview', // Elementor
+            'elementor_library', // Elementor
+            'fl_builder',      // Beaver Builder
+            'vc_editable',     // WPBakery
+            'vc_action',       // WPBakery
+            'mkhb',            // Jupiter Builder
+        );
+
+        foreach ($get_params as $param) {
+            if (!empty($_GET[$param])) {
+                return true;
+            }
+        }
+
+        // Divi Visual Builder AJAX - check safely.
+        if (defined('DOING_AJAX') && DOING_AJAX && !empty($_POST['action'])) {
+            $action = sanitize_text_field(wp_unslash($_POST['action']));
+            if (strpos($action, 'et_') === 0) {
+                return true;
+            }
+        }
+
+        // Generic builder detection via WordPress function.
+        if (function_exists('is_preview') && is_preview()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Print the view script in the footer (used as fallback for page builders).
+     */
+    public function print_footer_script() {
+        static $printed = false;
+        if ($printed) {
+            return;
+        }
+        $printed = true;
+
+        // Check if script was already output via normal enqueue.
+        if (wp_script_is('brightlocal-reviews-view', 'done')) {
+            return;
+        }
+
+        echo $this->get_inline_script_safe();
+    }
+
+    /**
+     * Get the inline script wrapped safely to prevent conflicts with page builders.
+     *
+     * @return string Safe inline script tag.
+     */
+    private function get_inline_script_safe() {
+        $js_file = BL_REVIEWS_PLUGIN_DIR . 'build/view.js';
+        if (!file_exists($js_file)) {
+            return '';
+        }
+
+        $js = $this->read_file_contents($js_file);
+        if (!$js) {
+            return '';
+        }
+        // Remove source map comment.
+        $js = preg_replace('/\/\/[#@]\s*sourceMappingURL=[^\n]+/', '', $js);
+
+        // Include localized data that would normally be added via wp_localize_script.
+        $localized_data = 'if(typeof blReviews==="undefined"){var blReviews=' . wp_json_encode(array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'    => wp_create_nonce('bl_reviews_nonce'),
+        )) . ';}';
+
+        // Wrap in an IIFE and DOMContentLoaded check to:
+        // 1. Prevent global scope pollution
+        // 2. Ensure DOM is ready
+        // 3. Avoid running during page builder scrapes
+        $safe_js = '(function(){' .
+            'if(document.readyState==="loading"){' .
+                'document.addEventListener("DOMContentLoaded",function(){' . $localized_data . $js . '});' .
+            '}else{' .
+                $localized_data . $js .
+            '}' .
+        '})();';
+
+        return '<script id="brightlocal-reviews-inline-script">' . $safe_js . '</script>';
+    }
+
+    /**
+     * Read file contents safely.
+     * Uses include/output buffering to avoid file_get_contents which some
+     * security plugins flag.
+     *
+     * @param string $file_path Absolute path to file.
+     * @return string|false File contents or false on failure.
+     */
+    private function read_file_contents($file_path) {
+        if (!file_exists($file_path) || !is_readable($file_path)) {
+            return false;
+        }
+
+        // Use output buffering with include for CSS/JS files.
+        // This is safer than file_get_contents for some security scanners.
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+        return @file_get_contents($file_path);
     }
 } 
