@@ -2,7 +2,7 @@
 /**
  * Plugin Name: BrightLocal Reviews
  * Description: Display reviews from BrightLocal Showcase Review widget
- * Version: 1.2.4
+ * Version: 1.2.5
  * Author: Mark Fenske
  * Update URI: https://github.com/markfenske84/brightlocal-reviews
  * Text Domain: brightlocal-reviews
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('BL_REVIEWS_VERSION', '1.2.4');
+define('BL_REVIEWS_VERSION', '1.2.5');
 define('BL_REVIEWS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('BL_REVIEWS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -156,7 +156,7 @@ function bl_reviews_load_more_ajax() {
                 <?php endif; ?>
             </div>
             <?php if ( ! empty( $author ) ) : ?>
-                <div class="bl-review-author"><?php echo esc_html( $author ); ?></div>
+                <cite class="bl-review-author"><?php echo esc_html( $author ); ?></cite>
             <?php endif; ?>
             <?php
                 // Determine if this review needs the Read More toggle.

@@ -125,7 +125,7 @@ $source_icons = array(
             </div>
             
             <?php if ($show_author && !empty($review['author'])): ?>
-                <h3 class="bl-review-author"><?php echo esc_html($review['author']); ?></h3>
+                <cite class="bl-review-author"><?php echo esc_html($review['author']); ?></cite>
             <?php endif; ?>
             
             <?php 
